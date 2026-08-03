@@ -1,6 +1,7 @@
 'use client';
+
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { 
   Target, ShieldAlert, BarChart3, ChevronRight, 
   Menu, X, Check, ArrowRight, Activity, 
@@ -17,12 +18,12 @@ const THEME = {
   border: '#233044'
 };
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
 };
@@ -35,13 +36,6 @@ export default function App() {
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
-    
-    if (typeof document !== 'undefined' && !document.getElementById('tailwind-cdn')) {
-      const script = document.createElement('script');
-      script.id = 'tailwind-cdn';
-      script.src = 'https://cdn.tailwindcss.com';
-      document.head.appendChild(script);
-    }
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -58,7 +52,7 @@ export default function App() {
       style={{ backgroundColor: THEME.bg, color: THEME.text }}
     >
       
-      {}
+      {/* Navbar */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-500 border-b ${isScrolled ? 'backdrop-blur-md shadow-2xl' : 'border-transparent'}`}
            style={{ 
              backgroundColor: isScrolled ? 'rgba(11, 18, 32, 0.85)' : 'transparent',
@@ -102,7 +96,7 @@ export default function App() {
         </div>
       </nav>
 
-      {}
+      {/* Hero Section */}
       <section className="relative pt-40 pb-24 lg:pt-52 lg:pb-32 px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-12" style={{ minHeight: '95vh' }}>
         
         {/* Subtle Background Elements */}
@@ -153,7 +147,7 @@ export default function App() {
           </motion.div>
         </motion.div>
 
-        {}
+        {/* Dashboard Mockup */}
         <motion.div 
           className="lg:w-1/2 w-full relative z-10"
           initial={{ opacity: 0, y: 40 }} 
@@ -245,7 +239,7 @@ export default function App() {
         </motion.div>
       </section>
 
-      {}
+      {/* Solución Section */}
       <section id="solucion" className="py-24 relative border-t" style={{ borderColor: THEME.border, backgroundColor: THEME.bg }}>
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-20">
@@ -285,7 +279,7 @@ export default function App() {
         </div>
       </section>
 
-      {}
+      {/* Metodología Section */}
       <section id="como-funciona" className="py-32 relative border-t" style={{ borderColor: THEME.border, backgroundColor: THEME.surface }}>
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="mb-20 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -336,7 +330,7 @@ export default function App() {
         </div>
       </section>
 
-      {}
+      {/* CTA Section */}
       <section id="cta" className="py-32 relative border-t" style={{ borderColor: THEME.border, backgroundColor: THEME.bg }}>
         {/* Glow effect */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[150px] pointer-events-none opacity-10"
@@ -419,7 +413,7 @@ export default function App() {
         </div>
       </section>
 
-      {}
+      {/* Footer */}
       <footer className="border-t pt-16 pb-8" style={{ borderColor: THEME.border, backgroundColor: THEME.surface }}>
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
