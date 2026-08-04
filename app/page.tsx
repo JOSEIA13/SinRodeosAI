@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Clock } from 'lucide-react';
 import Link from 'next/link';
 
+
 export default function DiagnosticoOnboarding() {
   const sections = [
     { title: "Información General", desc: "Datos demográficos y de campaña" },
@@ -64,7 +65,7 @@ export default function DiagnosticoOnboarding() {
 }
 ```eof
 
-### Paso 3: Conectar la Landing (`app/page.tsx`)
+: Conectar la Landing (`app/page.tsx`)
 
 Asegúrate de ir a tu archivo `app/page.tsx` y buscar los botones del `Hero` (y cualquier otro) para envolverlos en el componente `Link` de Next.js:
 
