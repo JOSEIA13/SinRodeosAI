@@ -147,6 +147,3 @@ export default function LandingPremium() {
     </div>
   );
 }
-```eof
-
-Guárdalo, haz el `git push`, y verás tu Landing 100% terminada, con su rejilla, sus menús, los botones apuntando al diagnóstico y el dashboard de Candidate DNA™. ¡Quedará espectacular!
