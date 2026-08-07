@@ -38,10 +38,10 @@ export default function LandingPremium() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium" style={{ color: THEME.muted }}>
             <a href="#solucion" className="hover:text-white transition-colors">La Solución</a>
             <a href="#como-funciona" className="hover:text-white transition-colors">Metodología</a>
-            <Link href="/diagnostico" className="hover:text-white transition-colors text-[#D4A53A]">Diagnóstico</Link>
+            <Link href="/diagnostico/entrevista" className="hover:text-white transition-colors text-[#D4A53A]">Diagnóstico</Link>
           </div>
 
-          <Link href="/diagnostico" className="font-semibold px-6 py-2.5 rounded transition-all flex items-center gap-2 hover:scale-105" style={{ backgroundColor: THEME.primary, color: THEME.bg }}>
+          <Link href="/diagnostico/entrevista" className="font-semibold px-6 py-2.5 rounded transition-all flex items-center gap-2 hover:scale-105" style={{ backgroundColor: THEME.primary, color: THEME.bg }}>
             Solicitar acceso
           </Link>
         </div>
@@ -78,7 +78,7 @@ export default function LandingPremium() {
             Sin Rodeos Intelligence es la primera plataforma diseñada para diagnosticar candidatos, evaluar campañas y construir estrategias políticas basadas en inteligencia artificial.
           </p>
           <div className="flex gap-4">
-            <Link href="/diagnostico" className="inline-block font-semibold px-8 py-3.5 rounded transition-all hover:scale-105" style={{ backgroundColor: THEME.primary, color: THEME.bg }}>
+            <Link href="/diagnostico/entrevista" className="inline-block font-semibold px-8 py-3.5 rounded transition-all hover:scale-105" style={{ backgroundColor: THEME.primary, color: THEME.bg }}>
               Comenzar Diagnóstico
             </Link>
           </div>
