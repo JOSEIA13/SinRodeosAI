@@ -38,10 +38,10 @@ export default function LandingPremium() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium" style={{ color: THEME.muted }}>
             <a href="#solucion" className="hover:text-white transition-colors">La Solución</a>
             <a href="#como-funciona" className="hover:text-white transition-colors">Metodología</a>
-            <Link href="/diagnostico" className="hover:text-white transition-colors text-[#D4A53A]">Diagnóstico</Link>
+            <Link href="/diagnostico/entrevista" className="hover:text-white transition-colors text-[#D4A53A]">Diagnóstico</Link>
           </div>
 
-          <Link href="/diagnostico" className="font-semibold px-6 py-2.5 rounded transition-all flex items-center gap-2 hover:scale-105" style={{ backgroundColor: THEME.primary, color: THEME.bg }}>
+          <Link href="/diagnostico/entrevista" className="font-semibold px-6 py-2.5 rounded transition-all flex items-center gap-2 hover:scale-105" style={{ backgroundColor: THEME.primary, color: THEME.bg }}>
             Solicitar acceso
           </Link>
         </div>
@@ -78,7 +78,7 @@ export default function LandingPremium() {
             Sin Rodeos Intelligence es la primera plataforma diseñada para diagnosticar candidatos, evaluar campañas y construir estrategias políticas basadas en inteligencia artificial.
           </p>
           <div className="flex gap-4">
-            <Link href="/diagnostico" className="inline-block font-semibold px-8 py-3.5 rounded transition-all hover:scale-105" style={{ backgroundColor: THEME.primary, color: THEME.bg }}>
+            <Link href="/diagnostico/entrevista" className="inline-block font-semibold px-8 py-3.5 rounded transition-all hover:scale-105" style={{ backgroundColor: THEME.primary, color: THEME.bg }}>
               Comenzar Diagnóstico
             </Link>
           </div>
@@ -117,33 +117,90 @@ export default function LandingPremium() {
           </div>
         </div>
       </section>
-
-      {/* Features / La Solución */}
-      <section id="solucion" className="py-24 border-t relative z-10" style={{ borderColor: THEME.border, backgroundColor: THEME.bg }}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-extrabold mb-4">La Solución Integral</h2>
-            <p className="text-[#94A3B8]">Transformamos datos complejos en una hoja de ruta militarmente precisa.</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { title: "Diagnóstico Preciso", icon: Target, desc: "Evaluamos el terreno electoral con objetividad clínica. Sin sesgos, solo datos duros." },
-              { title: "Candidate DNA™", icon: ShieldAlert, desc: "Mapeo algorítmico de fortalezas y debilidades comunicacionales del candidato." },
-              { title: "Plan de Acción", icon: Briefcase, desc: "De la estrategia a la táctica. Tareas diarias claras para movilizar tu campaña." }
-            ].map((item, i) => (
-              <div key={i} className="p-8 rounded-xl transition-all hover:-translate-y-1" style={{ backgroundColor: THEME.surface, border: `1px solid ${THEME.border}` }}>
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-6" style={{ backgroundColor: 'rgba(212, 165, 58, 0.1)' }}>
-                  <item.icon className="w-6 h-6" style={{ color: THEME.primary }} />
-                </div>
-                <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: THEME.muted }}>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
       
     </div>
   );
+}
+```eof
+
+### Paso 2 y 3: El código de la Entrevista actual
+
+Confirmo que el archivo de resultados (`app/diagnostico/resultado/page.tsx`) está en la carpeta correcta gracias a las correcciones que hicimos antes.
+
+Ahora, sobre la entrevista: **este es el código actual que tenemos en `app/diagnostico/entrevista/page.tsx`**. Actualmente funciona como un chat visual que te hace 4 preguntas, espera tus respuestas, muestra un "Procesando..." y te manda a resultados, **pero aún no guarda ni calcula nada real**.
+
+Aquí te lo pego para que podamos analizarlo e inyectarle la lógica real (guardar las respuestas, calcular el diagnóstico y mandarlo a la página de resultados):
+
+```tsx
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Send, CheckCircle2, AlertCircle, Bot, User, Activity } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+export default function EntrevistaPage() {
+  const router = useRouter();
+  const [paso, setPaso] = useState(0); 
+  const [respuestaActual, setRespuestaActual] = useState("");
+  const [historial, setHistorial] = useState<{rol: 'ia' | 'candidato', texto: string}[]>([]);
+  const [estaEscribiendo, setEstaEscribiendo] = useState(true);
+  const [analizando, setAnalizando] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const preguntasEstrategicas = [
+    "Comencemos con lo fundamental: ¿Cuál es el principal motivo que lo impulsa a buscar este cargo en este momento específico?",
+    "Entendido. Desde su perspectiva, ¿cuál es el mayor 'dolor' o problema no resuelto de los ciudadanos en su territorio?",
+    "Para contrastar con sus adversarios, ¿cuál considera que es su mayor ventaja competitiva? Aquello que usted tiene y ellos no.",
+    "Finalmente, si su campaña tuviera que resumirse en una sola frase o promesa central, ¿cuál sería?"
+  ];
+
+  useEffect(() => {
+    iniciarPregunta(0);
+  }, []);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [historial, estaEscribiendo]);
+
+  const iniciarPregunta = (index: number) => {
+    setEstaEscribiendo(true);
+    setTimeout(() => {
+      setHistorial(prev => [...prev, { rol: 'ia', texto: preguntasEstrategicas[index] }]);
+      setEstaEscribiendo(false);
+    }, 1500);
+  };
+
+  const handleEnviar = () => {
+    if (!respuestaActual.trim() || estaEscribiendo) return;
+
+    const nuevaRespuesta = respuestaActual;
+    setHistorial(prev => [...prev, { rol: 'candidato', texto: nuevaRespuesta }]);
+    setRespuestaActual("");
+
+    const siguientePaso = paso + 1;
+    
+    if (siguientePaso < preguntasEstrategicas.length) {
+      setPaso(siguientePaso);
+      iniciarPregunta(siguientePaso);
+    } else {
+      iniciarAnalisis();
+    }
+  };
+
+  const iniciarAnalisis = () => {
+    setEstaEscribiendo(true);
+    setTimeout(() => {
+      setHistorial(prev => [...prev, { 
+        rol: 'ia', 
+        texto: "Entrevista completada. Iniciando procesamiento de lenguaje natural y generación de Candidate DNA™..." 
+      }]);
+      setEstaEscribiendo(false);
+      setAnalizando(true);
+
+      setTimeout(() => {
+        router.push('/diagnostico/resultado');
+      }, 4000);
+    }, 1000);
+  };
 }
