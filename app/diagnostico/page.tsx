@@ -1,11 +1,63 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Target, Check, Lock, BarChart3, AlertTriangle, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ResultadoPage() {
+  // Estado para almacenar los cálculos dinámicos
+  const [metricas, setMetricas] = useState({
+    iesr: 0,
+    posicionamiento: 0,
+    resiliencia: 0,
+    claridad: 0,
+    movilizacion: 0,
+    riesgo: "Evaluando vulnerabilidades..."
+  });
+
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    // 1. Extraer respuestas guardadas de la entrevista
+    const respuestasGuardadas = localStorage.getItem('sinrodeos_respuestas');
+    
+    if (respuestasGuardadas) {
+      const respuestas = JSON.parse(respuestasGuardadas);
+      
+      // 2. Motor de cálculo simulado (Prompt Engineering rules)
+      // En una fase avanzada, esto lo devolverá OpenAI. Por ahora, calculamos basados en la longitud y estructura.
+      const calcPosicionamiento = Math.min(98, 40 + (respuestas[0]?.length || 0) * 0.5);
+      const calcResiliencia = Math.min(95, 35 + (respuestas[1]?.length || 0) * 0.4);
+      const calcClaridad = Math.min(99, 50 + (respuestas[2]?.length || 0) * 0.6);
+      const calcMovilizacion = Math.min(96, 45 + (respuestas[3]?.length || 0) * 0.5);
+      
+      const iesrTotal = Math.round((calcPosicionamiento + calcResiliencia + calcClaridad + calcMovilizacion) / 4);
+
+      let mensajeRiesgo = "Se ha detectado una vulnerabilidad potencial en la articulación de la promesa central. Requiere alineación narrativa inmediata.";
+      if (calcClaridad > 80) {
+        mensajeRiesgo = "La narrativa es clara, pero existe un leve riesgo de saturación en canales digitales. Se sugiere diversificar el mensaje.";
+      }
+
+      setMetricas({
+        iesr: iesrTotal,
+        posicionamiento: Math.round(calcPosicionamiento),
+        resiliencia: Math.round(calcResiliencia),
+        claridad: Math.round(calcClaridad),
+        movilizacion: Math.round(calcMovilizacion),
+        riesgo: mensajeRiesgo
+      });
+    } else {
+      // Valores por defecto si el usuario llega directo sin hacer la entrevista
+      setMetricas({
+        iesr: 78, posicionamiento: 85, resiliencia: 62, claridad: 74, movilizacion: 90,
+        riesgo: "Se ha detectado una vulnerabilidad potencial en la articulación de la promesa central."
+      });
+    }
+    
+    setCargando(false);
+  }, []);
+
   const fadeUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
@@ -14,6 +66,8 @@ export default function ResultadoPage() {
   const stagger = {
     visible: { transition: { staggerChildren: 0.15 } }
   };
+
+  if (cargando) return <div className="min-h-screen bg-[#0B1220] flex items-center justify-center text-[#D4A53A]">Cargando métricas...</div>;
 
   return (
     <div className="min-h-screen bg-[#0B1220] text-[#F8FAFC] pb-24">
@@ -63,14 +117,16 @@ export default function ResultadoPage() {
               </h3>
               
               <div className="flex items-end gap-2 mb-2">
-                <span className="text-6xl font-extrabold text-white">78</span>
+                <span className="text-6xl font-extrabold text-white">{metricas.iesr}</span>
                 <span className="text-xl text-[#94A3B8] font-medium mb-1.5">/ 100</span>
               </div>
-              <p className="text-sm text-[#D4A53A] font-medium">Viabilidad Electoral Moderada-Alta</p>
+              <p className="text-sm text-[#D4A53A] font-medium">
+                {metricas.iesr > 80 ? "Alta Viabilidad Electoral" : metricas.iesr > 60 ? "Viabilidad Electoral Moderada" : "Alerta Crítica de Campaña"}
+              </p>
               
               <div className="mt-6 pt-6 border-t border-[#233044]">
                 <p className="text-xs text-[#94A3B8] leading-relaxed">
-                  El Índice de Eficiencia Estratégica y Riesgo (IESR) indica que la campaña tiene fundamentos sólidos, pero presenta áreas críticas de optimización táctica.
+                  El Índice de Eficiencia Estratégica y Riesgo (IESR) indica la solidez de los fundamentos actuales basándose en sus respuestas clave.
                 </p>
               </div>
             </div>
@@ -81,7 +137,7 @@ export default function ResultadoPage() {
                 <AlertTriangle className="w-4 h-4" /> Alerta de Riesgo
               </h3>
               <p className="text-sm text-red-200/70">
-                Se ha detectado una vulnerabilidad potencial en la articulación de la promesa central. Requiere alineación narrativa inmediata.
+                {metricas.riesgo}
               </p>
             </div>
           </motion.div>
@@ -100,10 +156,10 @@ export default function ResultadoPage() {
 
               <div className="space-y-6">
                 {[
-                  { label: "Posicionamiento de Marca", score: 85, color: "#D4A53A" },
-                  { label: "Resiliencia de Crisis", score: 62, color: "#94A3B8" },
-                  { label: "Claridad Narrativa", score: 74, color: "#F8FAFC" },
-                  { label: "Capacidad de Movilización", score: 90, color: "#D4A53A" }
+                  { label: "Posicionamiento de Marca", score: metricas.posicionamiento, color: "#D4A53A" },
+                  { label: "Resiliencia de Crisis", score: metricas.resiliencia, color: "#94A3B8" },
+                  { label: "Claridad Narrativa", score: metricas.claridad, color: "#F8FAFC" },
+                  { label: "Capacidad de Movilización", score: metricas.movilizacion, color: "#D4A53A" }
                 ].map((item, idx) => (
                   <div key={idx} className="space-y-2">
                     <div className="flex justify-between text-sm font-medium">
