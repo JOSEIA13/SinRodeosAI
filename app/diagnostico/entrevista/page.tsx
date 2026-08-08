@@ -133,7 +133,7 @@ export default function EntrevistaEstructuradaPage() {
       </div>
 
       {/* Área de Chat */}
-      <div className="w-full max-w-3xl flex-1 flex flex-col p-4 sm:p-8 overflow-y-auto pb-40">
+      <div className="w-full max-w-3xl flex-1 flex flex-col p-4 sm:p-8 overflow-y-auto pb-40 scrollbar-custom">
         <div className="flex flex-col gap-6">
           <AnimatePresence>
             {historial.map((mensaje, idx) => (
