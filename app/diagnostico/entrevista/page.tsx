@@ -80,6 +80,7 @@ export default function EntrevistaEstructuradaPage() {
 
   const manejarEnvio = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // VALIDACIÓN ESTRICTA: Obliga a que la respuesta no esté vacía
     if (!respuestaActual.trim() || analizando) return;
 
     const preguntaObj = PREGUNTAS_PLANAS[indiceActual];
@@ -130,8 +131,46 @@ export default function EntrevistaEstructuradaPage() {
     }
   };
 
+  // NUEVA FUNCIÓN: Genera un reporte imprimible limpio con preguntas y respuestas
   const descargarReporte = () => {
-    window.print();
+    const ventanaImpresion = window.open('', '_blank');
+    if (!ventanaImpresion) return;
+
+    const htmlContenido = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Reporte de Diagnóstico Estratégico</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; color: #111; line-height: 1.5; }
+            h1 { color: #b8860b; border-bottom: 2px solid #b8860b; padding-bottom: 10px; }
+            .score-box { background: #f4f4f4; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 18px; font-weight: bold; }
+            .qa-block { margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+            .question { font-weight: bold; color: #333; }
+            .answer { margin-top: 5px; color: #555; background: #fafafa; padding: 10px; border-left: 3px solid #b8860b; }
+          </style>
+        </head>
+        <body>
+          <h1>Auditoría Estratégica - Resultado de Entrevista</h1>
+          <div class="score-box">
+            Puntaje Global Obtenido: ${typeof resultadoFinal === 'object' ? resultadoFinal?.total || resultadoFinal?.puntajeFinal || 'Evaluado' : resultadoFinal}
+          </div>
+          <h3>Detalle de Respuestas del Candidato:</h3>
+          ${PREGUNTAS_PLANAS.map((p) => `
+            <div class="qa-block">
+              <div class="question">[${p.nombreFase}] ${p.texto}</div>
+              <div class="answer">${datosAcumulados[p.id] || 'Sin respuesta'}</div>
+            </div>
+          `).join('')}
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `;
+
+    ventanaImpresion.document.write(htmlContenido);
+    ventanaImpresion.document.close();
   };
 
   const progreso = Math.round(((indiceActual + 1) / PREGUNTAS_PLANAS.length) * 100);
@@ -164,13 +203,20 @@ export default function EntrevistaEstructuradaPage() {
       <footer className="p-4 bg-[#111827]">
         <form onSubmit={manejarEnvio} className="max-w-3xl mx-auto flex gap-2">
           <input
-            className="flex-1 bg-[#0B1220] border border-[#233044] rounded-xl px-4 py-3 text-sm focus:border-[#D4A53A] outline-none"
+            className="flex-1 bg-[#0B1220] border border-[#233044] rounded-xl px-4 py-3 text-sm focus:border-[#D4A53A] outline-none disabled:opacity-50"
             value={respuestaActual}
             onChange={(e) => setRespuestaActual(e.target.value)}
-            placeholder="Respuesta estratégica..."
+            placeholder="Escribe tu respuesta obligatoria para continuar..."
             disabled={analizando}
+            required
           />
-          <button className="bg-[#D4A53A] px-6 py-2 rounded-xl text-black font-bold">Enviar</button>
+          <button
+            type="submit"
+            disabled={!respuestaActual.trim() || analizando}
+            className="bg-[#D4A53A] px-6 py-2 rounded-xl text-black font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 transition"
+          >
+            Enviar
+          </button>
         </form>
       </footer>
 
@@ -190,11 +236,8 @@ export default function EntrevistaEstructuradaPage() {
             </div>
 
             <div className="flex gap-3">
-              <button type="button" onClick={descargarReporte} className="flex-1 border border-[#D4A53A] text-[#D4A53A] py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#D4A53A]/10">
-                <Download className="w-4 h-4" /> Descargar / Imprimir
-              </button>
-              <button type="button" onClick={descargarReporte} className="flex-1 border border-[#233044] text-gray-300 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-800">
-                <Printer className="w-4 h-4" /> Vista PDF
+              <button type="button" onClick={descargarReporte} className="flex-1 border border-[#D4A53A] text-[#D4A53A] py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#D4A53A]/10 transition">
+                <Download className="w-4 h-4" /> Descargar / Imprimir Informe
               </button>
             </div>
 
