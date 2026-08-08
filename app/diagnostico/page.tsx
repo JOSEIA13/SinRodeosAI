@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Target, Check, Lock, BarChart3, AlertTriangle, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { Activity, Target, Check, Lock, BarChart3, AlertTriangle, Zap, Download } from 'lucide-react';
 
 export default function ResultadoPage() {
   // Estado para almacenar los cálculos dinámicos
@@ -92,6 +93,32 @@ export default function ResultadoPage() {
       <main className="max-w-7xl mx-auto px-6 pt-12">
         
         {/* Encabezado del Reporte */}
+        {/* Encabezado del Reporte */}
+        <motion.div initial="hidden" animate="visible" variants={stagger} className="mb-10">
+          <div className="flex justify-between items-start">
+            <div>
+              <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#D4A53A]/10 border border-[#D4A53A]/30 text-[#D4A53A] text-xs font-bold tracking-widest uppercase mb-4">
+                <Check className="w-3 h-3" /> Reporte Generado
+              </motion.div>
+              <motion.h1 variants={fadeUp} className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
+                Diagnóstico Estratégico de Campaña
+              </motion.h1>
+              <motion.p variants={fadeUp} className="text-[#94A3B8] max-w-2xl text-lg">
+                Basado en las variables extraídas de la entrevista, hemos estructurado su Candidate DNA™ y su Índice de Eficiencia Estratégica.
+              </motion.p>
+            </div>
+            
+            {/* NUEVO BOTÓN DE DESCARGA */}
+            <motion.button 
+              variants={fadeUp}
+              onClick={() => window.print()}
+              className="hidden md:flex bg-[#111827] border border-[#233044] text-[#F8FAFC] hover:border-[#D4A53A] font-bold px-6 py-3 rounded-xl transition-all items-center gap-2 cursor-pointer shadow-lg"
+            >
+              <Download className="w-4 h-4 text-[#D4A53A]" />
+              <span>PDF</span>
+            </motion.button>
+          </div>
+        </motion.div>
         <motion.div initial="hidden" animate="visible" variants={stagger} className="mb-10">
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#D4A53A]/10 border border-[#D4A53A]/30 text-[#D4A53A] text-xs font-bold tracking-widest uppercase mb-4">
             <Check className="w-3 h-3" /> Reporte Generado
