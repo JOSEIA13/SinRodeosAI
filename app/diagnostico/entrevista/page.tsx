@@ -32,10 +32,6 @@ import { calcularDiagnosticoBase } from '@/lib/diagnostic/engine';
 
 // Matriz Estratégica de Preguntas
 const PREGUNTAS_ESTRATEGICAS = [
-  // ... tus preguntas ...
-];
-// Matriz Estratégica de Preguntas
-const PREGUNTAS_ESTRATEGICAS = [
   { id: 'cargo', bloque: 'A. Perfil', texto: 'Comencemos con el objetivo: ¿A qué cargo aspira y en qué territorio específico?' },
   { id: 'motivacion', bloque: 'A. Perfil', texto: 'Más allá del discurso oficial, ¿cuál es su motivación personal y real para buscar este cargo ahora?' },
   { id: 'dolorTerritorio', bloque: 'B. Territorio', texto: 'Desde su lectura del terreno, ¿cuál es el mayor "dolor" o frustración actual de los ciudadanos en su territorio?' },
