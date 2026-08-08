@@ -167,7 +167,7 @@ export default function EntrevistaEstructuradaPage() {
         </div>
       </header>
 
-      {/* Contenedor del Chat */}
+      {/* Contenedor del Chat con Scroll Optimizado */}
       <main className="max-w-3xl w-full mx-auto px-4 py-8 flex-1 flex flex-col space-y-6 overflow-y-auto">
         {historial.map((msg, idx) => (
           <motion.div 
