@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Target, Check, Lock, BarChart3, AlertTriangle, Zap } from 'lucide-react';
+// Elimina la línea antigua que causaba conflicto
 import Link from 'next/link';
+// Combina todos los iconos en una sola línea de importación
 import { Activity, Target, Check, Lock, BarChart3, AlertTriangle, Zap, Download } from 'lucide-react';
-
 export default function ResultadoPage() {
   // Estado para almacenar los cálculos dinámicos
   const [metricas, setMetricas] = useState({
