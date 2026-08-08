@@ -1,11 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Target, Check, Lock, BarChart3, AlertTriangle, Zap } from 'lucide-react';
+import { Activity, Target, Check, Lock, BarChart3, AlertTriangle, Zap, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import { ResultadoDiagnostico } from '@/lib/diagnostic/types';
 
 export default function ResultadoPage() {
+  const [resultado, setResultado] = useState<ResultadoDiagnostico | null>(null);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    // Leemos el resultado calculado del motor almacenado en el localStorage
+    const datosGuardados = localStorage.getItem('sinrodeos_resultado_diagnostico');
+    if (datosGuardados) {
+      try {
+        const parsed: ResultadoDiagnostico = JSON.parse(datosGuardados);
+        setResultado(parsed);
+      } catch (e) {
+        console.error("Error al parsear el diagnóstico", e);
+      }
+    }
+    setCargando(false);
+  }, []);
+
   const fadeUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
@@ -14,6 +32,44 @@ export default function ResultadoPage() {
   const stagger = {
     visible: { transition: { staggerChildren: 0.15 } }
   };
+
+  if (cargando) {
+    return (
+      <div className="min-h-screen bg-[#0B1220] text-[#F8FAFC] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#D4A53A] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm text-[#94A3B8] uppercase tracking-widest font-semibold">Cargando Matriz Estratégica...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback si ingresan directo sin hacer la entrevista
+  if (!resultado) {
+    return (
+      <div className="min-h-screen bg-[#0B1220] text-[#F8FAFC] flex flex-col items-center justify-center p-6 text-center">
+        <div className="bg-[#111827] border border-[#233044] p-8 rounded-2xl max-w-md w-full">
+          <AlertTriangle className="w-12 h-12 text-[#D4A53A] mx-auto mb-4" />
+          <h2 className="text-xl font-bold mb-2">Sin datos de diagnóstico</h2>
+          <p className="text-sm text-[#94A3B8] mb-6">No se encontraron registros de una entrevista previa en este navegador.</p>
+          <Link href="/diagnostico" className="inline-flex items-center justify-center gap-2 w-full bg-[#D4A53A] text-[#0B1220] font-bold py-3 rounded-lg hover:bg-[#b88f2f] transition-all">
+            <RefreshCw className="w-4 h-4" /> Iniciar Entrevista Estratégica
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Mapeo dinámico de las dimensiones del Candidate DNA
+  const dnaList = [
+    { label: "Claridad Narrativa", score: resultado.dna.claridadNarrativa, color: "#D4A53A" },
+    { label: "Diferenciación", score: resultado.dna.diferenciacion, color: "#F8FAFC" },
+    { label: "Credibilidad", score: resultado.dna.credibilidad, color: "#94A3B8" },
+    { label: "Conocimiento Territorial", score: resultado.dna.conocimientoTerritorial, color: "#D4A53A" },
+    { label: "Organización", score: resultado.dna.organizacion, color: "#94A3B8" },
+    { label: "Movilización (Día D)", score: resultado.dna.movilizacion, color: "#D4A53A" },
+    { label: "Gestión de Riesgo", score: resultado.dna.gestionRiesgo, color: "#F8FAFC" }
+  ];
 
   return (
     <div className="min-h-screen bg-[#0B1220] text-[#F8FAFC] pb-24">
@@ -29,8 +85,8 @@ export default function ResultadoPage() {
               <span className="text-[9px] tracking-[0.2em] uppercase text-[#D4A53A] font-medium">OS Dashboard</span>
             </div>
           </div>
-          <Link href="/" className="text-xs font-semibold px-4 py-2 rounded border border-[#233044] hover:bg-[#233044] transition-colors">
-            Cerrar Sesión
+          <Link href="/diagnostico" className="text-xs font-semibold px-4 py-2 rounded border border-[#233044] hover:bg-[#233044] transition-colors">
+            Nueva Entrevista
           </Link>
         </div>
       </div>
@@ -40,13 +96,13 @@ export default function ResultadoPage() {
         {/* Encabezado del Reporte */}
         <motion.div initial="hidden" animate="visible" variants={stagger} className="mb-10">
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#D4A53A]/10 border border-[#D4A53A]/30 text-[#D4A53A] text-xs font-bold tracking-widest uppercase mb-4">
-            <Check className="w-3 h-3" /> Reporte Generado
+            <Check className="w-3 h-3" /> Reporte Generado por Motor Algorítmico
           </motion.div>
           <motion.h1 variants={fadeUp} className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
             Diagnóstico Estratégico de Campaña
           </motion.h1>
           <motion.p variants={fadeUp} className="text-[#94A3B8] max-w-2xl text-lg">
-            Basado en las variables extraídas de la entrevista, hemos estructurado su Candidate DNA™ y su Índice de Eficiencia Estratégica.
+            Perfil Dominante detectado: <span className="text-[#D4A53A] font-semibold">{resultado.perfilDominante}</span>
           </motion.p>
         </motion.div>
 
@@ -55,7 +111,7 @@ export default function ResultadoPage() {
           {/* Columna Izquierda: IESR y Riesgo */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="space-y-8">
             
-            {/* KPI Principal */}
+            {/* KPI Principal IESR */}
             <div className="bg-[#111827] border border-[#233044] p-8 rounded-2xl relative overflow-hidden">
               <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#D4A53A] opacity-5 blur-3xl rounded-full"></div>
               <h3 className="text-xs font-bold uppercase tracking-widest text-[#94A3B8] flex items-center gap-2 mb-6">
@@ -63,26 +119,29 @@ export default function ResultadoPage() {
               </h3>
               
               <div className="flex items-end gap-2 mb-2">
-                <span className="text-6xl font-extrabold text-white">78</span>
+                <span className="text-6xl font-extrabold text-white">{resultado.iesr}</span>
                 <span className="text-xl text-[#94A3B8] font-medium mb-1.5">/ 100</span>
               </div>
-              <p className="text-sm text-[#D4A53A] font-medium">Viabilidad Electoral Moderada-Alta</p>
+              <p className="text-sm text-[#D4A53A] font-medium">{resultado.veredictoViabilidad}</p>
               
               <div className="mt-6 pt-6 border-t border-[#233044]">
                 <p className="text-xs text-[#94A3B8] leading-relaxed">
-                  El Índice de Eficiencia Estratégica y Riesgo (IESR) indica que la campaña tiene fundamentos sólidos, pero presenta áreas críticas de optimización táctica.
+                  Calculado ponderando la solidez de las respuestas frente a variables críticas de competencia, territorio y organización operativa.
                 </p>
               </div>
             </div>
 
-            {/* Alerta de Riesgo */}
+            {/* Alerta de Riesgo Dinámica */}
             <div className="bg-red-950/20 border border-red-900/50 p-6 rounded-2xl">
               <h3 className="text-xs font-bold uppercase tracking-widest text-red-400 flex items-center gap-2 mb-4">
-                <AlertTriangle className="w-4 h-4" /> Alerta de Riesgo
+                <AlertTriangle className="w-4 h-4" /> Alertas Críticas Detectadas ({resultado.riesgos.length})
               </h3>
-              <p className="text-sm text-red-200/70">
-                Se ha detectado una vulnerabilidad potencial en la articulación de la promesa central. Requiere alineación narrativa inmediata.
-              </p>
+              {resultado.riesgos.map((riesgo, i) => (
+                <div key={i} className="mb-3 last:mb-0">
+                  <p className="text-xs font-bold text-red-300">{riesgo.titulo} ({riesgo.nivel})</p>
+                  <p className="text-xs text-red-200/70 mt-1">{riesgo.descripcion}</p>
+                </div>
+              ))}
             </div>
           </motion.div>
 
@@ -93,18 +152,13 @@ export default function ResultadoPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-[#111827] border border-[#233044] p-8 rounded-2xl">
               <div className="flex justify-between items-center mb-8">
                 <h3 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-[#D4A53A]" /> Candidate DNA™
+                  <BarChart3 className="w-4 h-4 text-[#D4A53A]" /> Candidate DNA™ (Métricas Calculadas)
                 </h3>
                 <span className="text-[10px] uppercase tracking-wider text-[#94A3B8] border border-[#233044] px-2 py-1 rounded">Análisis Predictivo</span>
               </div>
 
               <div className="space-y-6">
-                {[
-                  { label: "Posicionamiento de Marca", score: 85, color: "#D4A53A" },
-                  { label: "Resiliencia de Crisis", score: 62, color: "#94A3B8" },
-                  { label: "Claridad Narrativa", score: 74, color: "#F8FAFC" },
-                  { label: "Capacidad de Movilización", score: 90, color: "#D4A53A" }
-                ].map((item, idx) => (
+                {dnaList.map((item, idx) => (
                   <div key={idx} className="space-y-2">
                     <div className="flex justify-between text-sm font-medium">
                       <span className="text-[#94A3B8]">{item.label}</span>
@@ -114,7 +168,7 @@ export default function ResultadoPage() {
                       <motion.div 
                         initial={{ width: 0 }} 
                         animate={{ width: `${item.score}%` }} 
-                        transition={{ duration: 1.5, delay: 0.5 + (idx * 0.2), ease: "easeOut" }}
+                        transition={{ duration: 1.5, delay: 0.5 + (idx * 0.1), ease: "easeOut" }}
                         className="h-full rounded-full"
                         style={{ backgroundColor: item.color }}
                       />
@@ -129,28 +183,27 @@ export default function ResultadoPage() {
               
               <div className="bg-[#111827] border border-[#233044] p-8 rounded-2xl">
                 <h3 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2 mb-6">
-                  <Target className="w-4 h-4 text-[#D4A53A]" /> Plan de Acción: Primeros 30 Días
+                  <Target className="w-4 h-4 text-[#D4A53A]" /> Plan de Acción Táctico Inmediato
                 </h3>
                 
                 <div className="space-y-4">
-                  {[
-                    "Consolidar la frase de contraste para el segmento indeciso.",
-                    "Activar protocolo de contención en áreas de vulnerabilidad.",
-                    "Reestructurar calendario de medios priorizando el 'dolor' detectado."
-                  ].map((task, i) => (
+                  {resultado.recomendaciones.map((rec, i) => (
                     <div key={i} className="flex items-start gap-3 p-4 rounded-xl border border-[#233044] bg-[#0B1220]">
                       <div className="mt-0.5 w-5 h-5 rounded-full border border-[#D4A53A] flex items-center justify-center shrink-0">
                         <div className="w-2 h-2 rounded-full bg-[#D4A53A]"></div>
                       </div>
-                      <p className="text-sm text-[#94A3B8]">{task}</p>
+                      <div>
+                        <p className="text-xs font-bold text-[#D4A53A] uppercase tracking-wide">Horizonte: {rec.horizonteDias} días ({rec.prioridad})</p>
+                        <p className="text-sm text-[#F8FAFC] mt-1">{rec.accion}</p>
+                      </div>
                     </div>
                   ))}
                   
-                  {/* Tareas bloqueadas */}
+                  {/* Tareas bloqueadas (Modelo comercial) */}
                   {[1, 2].map((_, i) => (
                     <div key={i} className="flex items-start gap-3 p-4 rounded-xl border border-[#233044] bg-[#0B1220] opacity-40 blur-[2px]">
                       <div className="mt-0.5 w-5 h-5 rounded-full border border-[#94A3B8] shrink-0"></div>
-                      <p className="text-sm text-[#94A3B8]">Estrategia táctica confidencial reservada para usuarios Pro...</p>
+                      <p className="text-sm text-[#94A3B8]">Estrategia táctica confidencial avanzada reservada para usuarios Pro...</p>
                     </div>
                   ))}
                 </div>
