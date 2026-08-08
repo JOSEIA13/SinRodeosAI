@@ -4,30 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Activity } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-// 👉 IMPORTA EL MOTOR AQUÍ (Arriba, antes de declarar el componente)
-const iniciarAnalisis = (datosFinales: Record<string, string>) => {
-    setEstaEscribiendo(true);
-    setTimeout(() => {
-      setHistorial(prev => [...prev, { 
-        rol: 'ia', 
-        texto: "Entrevista completada. Procesando variables territoriales, de posicionamiento y riesgo. Generando matriz estratégica..." 
-      }]);
-      setEstaEscribiendo(false);
-      setAnalizando(true);
-
-      // 1. EJECUTAR EL MOTOR DE CÁLCULO BASE
-      const resultadoCalculado = calcularDiagnosticoBase(datosFinales);
-
-      // 2. GUARDAR EL RESULTADO ESTRUCTURADO EN LOCALSTORAGE
-      localStorage.setItem('sinrodeos_data_estructurada', JSON.stringify(datosFinales));
-      localStorage.setItem('sinrodeos_resultado_diagnostico', JSON.stringify(resultadoCalculado));
-
-      setTimeout(() => {
-        router.push('/diagnostico/resultado');
-      }, 3500);
-    }, 1000);
-  };
 import { calcularDiagnosticoBase } from '@/lib/diagnostic/engine';
 
 // Matriz Estratégica de Preguntas
