@@ -1,10 +1,8 @@
 ﻿'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Bot, User, ArrowRight } from 'lucide-react';
+import { Bot, User, Download, Printer } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-// Asumiendo que tu motor está en esta ruta, ajusta si es necesario
 import { calcularDiagnosticoBase } from '@/lib/diagnostic/engine';
 
 const FASES_ENTREVISTA = [
@@ -56,6 +54,7 @@ export default function EntrevistaEstructuradaPage() {
   const [analizando, setAnalizando] = useState(false);
   const [mostrarModalContacto, setMostrarModalContacto] = useState(false);
   const [contactoUsuario, setContactoUsuario] = useState({ email: '', whatsapp: '' });
+  const [resultadoFinal, setResultadoFinal] = useState<any>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,9 +70,10 @@ export default function EntrevistaEstructuradaPage() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [historial, estaEscribiendo]);
 
-  const iniciarAnalisis = (datosFinales: Record<string, string>) => {
-    const resultadoCalculado = calcularDiagnosticoBase(datosFinales);
-    localStorage.setItem('sinrodeos_resultado_diagnostico', JSON.stringify(resultadoCalculado));
+  const finalizarEntrevista = (datosFinales: Record<string, string>) => {
+    const puntaje = calcularDiagnosticoBase(datosFinales);
+    setResultadoFinal(puntaje);
+    localStorage.setItem('sinrodeos_resultado_diagnostico', JSON.stringify(puntaje));
     setAnalizando(false);
     setMostrarModalContacto(true);
   };
@@ -106,7 +106,7 @@ export default function EntrevistaEstructuradaPage() {
       }, 800);
     } else {
       setAnalizando(true);
-      iniciarAnalisis(nuevasRespuestas);
+      finalizarEntrevista(nuevasRespuestas);
     }
   };
 
@@ -116,13 +116,22 @@ export default function EntrevistaEstructuradaPage() {
     try {
       await fetch('/api/enviar-solicitud', {
         method: 'POST',
-        body: JSON.stringify({ respuestas: datosAcumulados, contacto: contactoUsuario })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          respuestas: datosAcumulados,
+          contacto: contactoUsuario,
+          resultado: resultadoFinal
+        })
       });
       router.push('/diagnostico/espera');
     } catch (err) {
       console.error(err);
       setAnalizando(false);
     }
+  };
+
+  const descargarReporte = () => {
+    window.print();
   };
 
   const progreso = Math.round(((indiceActual + 1) / PREGUNTAS_PLANAS.length) * 100);
@@ -159,19 +168,59 @@ export default function EntrevistaEstructuradaPage() {
             value={respuestaActual}
             onChange={(e) => setRespuestaActual(e.target.value)}
             placeholder="Respuesta estratégica..."
+            disabled={analizando}
           />
           <button className="bg-[#D4A53A] px-6 py-2 rounded-xl text-black font-bold">Enviar</button>
         </form>
       </footer>
 
       {mostrarModalContacto && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <form onSubmit={enviarSolicitudFinal} className="bg-[#111827] p-8 rounded-2xl max-w-sm w-full space-y-4">
-            <h2 className="font-bold">Datos para el Diagnóstico Oficial</h2>
-            <input type="email" placeholder="Correo" className="w-full bg-black p-3 rounded" onChange={(e) => setContactoUsuario({ ...contactoUsuario, email: e.target.value })} required />
-            <input type="tel" placeholder="WhatsApp" className="w-full bg-black p-3 rounded" onChange={(e) => setContactoUsuario({ ...contactoUsuario, whatsapp: e.target.value })} required />
-            <button className="w-full bg-[#D4A53A] text-black py-3 rounded font-bold">Solicitar Análisis</button>
-          </form>
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50">
+          <div className="bg-[#111827] border border-[#233044] p-8 rounded-2xl max-w-md w-full space-y-6">
+            <div>
+              <h2 className="text-lg font-bold text-[#D4A53A]">Diagnóstico Calculado con Éxito</h2>
+              <p className="text-xs text-[#94A3B8] mt-1">Puntuación y ponderación preliminar generada.</p>
+            </div>
+
+            <div className="bg-[#0B1220] p-4 rounded-xl border border-[#233044] text-center">
+              <span className="text-xs text-gray-400 uppercase tracking-wider block">Puntaje Global</span>
+              <span className="text-3xl font-black text-[#D4A53A]">
+                {typeof resultadoFinal === 'object' ? resultadoFinal?.total || resultadoFinal?.puntajeFinal || 'Evaluado' : resultadoFinal}
+              </span>
+            </div>
+
+            <div className="flex gap-3">
+              <button type="button" onClick={descargarReporte} className="flex-1 border border-[#D4A53A] text-[#D4A53A] py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#D4A53A]/10">
+                <Download className="w-4 h-4" /> Descargar / Imprimir
+              </button>
+              <button type="button" onClick={descargarReporte} className="flex-1 border border-[#233044] text-gray-300 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-800">
+                <Printer className="w-4 h-4" /> Vista PDF
+              </button>
+            </div>
+
+            <form onSubmit={enviarSolicitudFinal} className="space-y-3 border-t border-[#233044] pt-4">
+              <p className="text-xs text-[#94A3B8]">Ingresa tus datos para recibir copia en tu correo y continuar:</p>
+              <input
+                type="email"
+                placeholder="Tu correo electrónico"
+                className="w-full bg-black border border-[#233044] p-3 rounded-xl text-sm outline-none focus:border-[#D4A53A]"
+                value={contactoUsuario.email}
+                onChange={(e) => setContactoUsuario({ ...contactoUsuario, email: e.target.value })}
+                required
+              />
+              <input
+                type="tel"
+                placeholder="Tu WhatsApp"
+                className="w-full bg-black border border-[#233044] p-3 rounded-xl text-sm outline-none focus:border-[#D4A53A]"
+                value={contactoUsuario.whatsapp}
+                onChange={(e) => setContactoUsuario({ ...contactoUsuario, whatsapp: e.target.value })}
+                required
+              />
+              <button className="w-full bg-[#D4A53A] text-black py-3 rounded-xl font-bold text-sm hover:brightness-110 transition">
+                Enviar Copia y Ver Informe Completo
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>
