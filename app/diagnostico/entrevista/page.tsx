@@ -1,12 +1,9 @@
 ﻿'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Bot, User, Download, Printer, ChevronRight, Briefcase } from 'lucide-react';
+import { Bot, User, Download, Printer, ChevronRight, Briefcase, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-// Mantendremos la importación del engine por ahora, en el Paso 2 lo conectaremos a la IA
-import { calcularDiagnosticoBase } from '@/lib/diagnostic/engine';
 
-// BANCO DE PREGUNTAS: EJECUTIVOS (Alcaldías y Gobernaciones)
 const PREGUNTAS_EJECUTIVAS = [
   { id: 'e1_dolor', texto: '¿Cuál es el dolor estructural de la región que sus oponentes no se atreven a mencionar por miedo a perder votos?' },
   { id: 'e2_crisis', texto: 'Ante una crisis de seguridad o escándalo de corrupción en su gabinete, ¿cuál es su protocolo de contención en las primeras 24 horas?' },
@@ -14,7 +11,6 @@ const PREGUNTAS_EJECUTIVAS = [
   { id: 'e4_metrica', texto: '¿Qué indicador numérico exacto usará el electorado para medir su éxito al final de su primer año de mandato?' }
 ];
 
-// BANCO DE PREGUNTAS: LEGISLATIVOS (Concejo, Asamblea, Congreso)
 const PREGUNTAS_LEGISLATIVAS = [
   { id: 'l1_nicho', texto: '¿A qué nicho poblacional o gremio específico representa usted y por qué ese grupo está huérfano de representación hoy?' },
   { id: 'l2_control', texto: '¿Qué tema intocable del gobierno actual piensa auditar y denunciar sin importar el costo político?' },
@@ -25,7 +21,6 @@ const PREGUNTAS_LEGISLATIVAS = [
 export default function EntrevistaEstructuradaPage() {
   const router = useRouter();
 
-  // Nuevo Estado: Cargo y Selección
   const [cargoSeleccionado, setCargoSeleccionado] = useState<'EJECUTIVO' | 'LEGISLATIVO' | null>(null);
   const [preguntasActivas, setPreguntasActivas] = useState<any[]>([]);
 
@@ -35,14 +30,13 @@ export default function EntrevistaEstructuradaPage() {
   const [historial, setHistorial] = useState<Array<{ rol: 'ia' | 'usuario'; texto: string }>>([]);
   const [estaEscribiendo, setEstaEscribiendo] = useState(false);
   const [analizando, setAnalizando] = useState(false);
+  const [mensajeEstado, setMensajeEstado] = useState('');
 
-  // Estados Finales
   const [mostrarModalContacto, setMostrarModalContacto] = useState(false);
   const [contactoUsuario, setContactoUsuario] = useState({ email: '', whatsapp: '' });
   const [resultadoFinal, setResultadoFinal] = useState<any>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Iniciar la entrevista UNA VEZ que seleccionan el cargo
   const iniciarEntrevista = (tipoCargo: 'EJECUTIVO' | 'LEGISLATIVO') => {
     setCargoSeleccionado(tipoCargo);
     const setPreguntas = tipoCargo === 'EJECUTIVO' ? PREGUNTAS_EJECUTIVAS : PREGUNTAS_LEGISLATIVAS;
@@ -59,13 +53,35 @@ export default function EntrevistaEstructuradaPage() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [historial, estaEscribiendo]);
 
-  const finalizarEntrevista = (datosFinales: Record<string, string>) => {
-    // Aquí añadiremos la conexión con IA en el Paso 2
-    const puntaje = calcularDiagnosticoBase(datosFinales);
-    setResultadoFinal(puntaje);
-    localStorage.setItem('sinrodeos_resultado_diagnostico', JSON.stringify(puntaje));
-    setAnalizando(false);
-    setMostrarModalContacto(true);
+  // CONEXIÓN CON EL JUEZ DE IA
+  const finalizarEntrevista = async (datosFinales: Record<string, string>) => {
+    setAnalizando(true);
+    setMensajeEstado('El motor de IA está evaluando la coherencia y profundidad estratégica de sus respuestas...');
+
+    try {
+      const res = await fetch('/api/evaluar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ respuestas: datosFinales, cargo: cargoSeleccionado })
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        setResultadoFinal({ coherente: false, veredicto: "Error interno del servidor. No se pudo procesar." });
+      } else {
+        setResultadoFinal(data);
+        // Solo guardamos si la IA dice que es coherente
+        if (data.coherente) {
+          localStorage.setItem('sinrodeos_resultado_diagnostico', JSON.stringify(data));
+        }
+      }
+    } catch (error) {
+      setResultadoFinal({ coherente: false, veredicto: "Error de conexión al procesar la auditoría." });
+    } finally {
+      setAnalizando(false);
+      setMostrarModalContacto(true);
+    }
   };
 
   const manejarEnvio = (e: React.FormEvent<HTMLFormElement>) => {
@@ -91,7 +107,6 @@ export default function EntrevistaEstructuradaPage() {
         setEstaEscribiendo(false);
       }, 800);
     } else {
-      setAnalizando(true);
       finalizarEntrevista(nuevasRespuestas);
     }
   };
@@ -99,6 +114,7 @@ export default function EntrevistaEstructuradaPage() {
   const enviarSolicitudFinal = async (e: React.FormEvent) => {
     e.preventDefault();
     setAnalizando(true);
+    setMensajeEstado('Preparando su dictamen final...');
     try {
       await fetch('/api/enviar-solicitud', {
         method: 'POST',
@@ -107,7 +123,6 @@ export default function EntrevistaEstructuradaPage() {
       });
       router.push('/diagnostico/espera');
     } catch (err) {
-      console.error(err);
       setAnalizando(false);
     }
   };
@@ -115,7 +130,6 @@ export default function EntrevistaEstructuradaPage() {
   const descargarReporte = () => { window.print(); };
   const progreso = preguntasActivas.length > 0 ? Math.round(((indiceActual + 1) / preguntasActivas.length) * 100) : 0;
 
-  // PANTALLA 0: SELECCIÓN DE CARGO
   if (!cargoSeleccionado) {
     return (
       <div className="min-h-screen bg-[#0B1220] flex items-center justify-center p-6 text-white">
@@ -126,10 +140,7 @@ export default function EntrevistaEstructuradaPage() {
           </div>
 
           <div className="space-y-4">
-            <button
-              onClick={() => iniciarEntrevista('EJECUTIVO')}
-              className="w-full bg-[#0B1220] border border-[#233044] hover:border-[#D4A53A] p-6 rounded-2xl flex items-center justify-between group transition-all"
-            >
+            <button onClick={() => iniciarEntrevista('EJECUTIVO')} className="w-full bg-[#0B1220] border border-[#233044] hover:border-[#D4A53A] p-6 rounded-2xl flex items-center justify-between group transition-all">
               <div className="flex items-center gap-4 text-left">
                 <div className="w-12 h-12 rounded-full bg-[#D4A53A]/10 text-[#D4A53A] flex items-center justify-center shrink-0">
                   <Briefcase className="w-6 h-6" />
@@ -142,17 +153,14 @@ export default function EntrevistaEstructuradaPage() {
               <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-[#D4A53A]" />
             </button>
 
-            <button
-              onClick={() => iniciarEntrevista('LEGISLATIVO')}
-              className="w-full bg-[#0B1220] border border-[#233044] hover:border-[#D4A53A] p-6 rounded-2xl flex items-center justify-between group transition-all"
-            >
+            <button onClick={() => iniciarEntrevista('LEGISLATIVO')} className="w-full bg-[#0B1220] border border-[#233044] hover:border-[#D4A53A] p-6 rounded-2xl flex items-center justify-between group transition-all">
               <div className="flex items-center gap-4 text-left">
                 <div className="w-12 h-12 rounded-full bg-[#D4A53A]/10 text-[#D4A53A] flex items-center justify-center shrink-0">
                   <Briefcase className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">Perfil Legislativo</h3>
-                  <p className="text-xs text-[#94A3B8]">Concejo, Asamblea, Congreso (Control Político y Nichos)</p>
+                  <p className="text-xs text-[#94A3B8]">Concejo, Asamblea, Congreso (Control Político)</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-[#D4A53A]" />
@@ -163,7 +171,6 @@ export default function EntrevistaEstructuradaPage() {
     );
   }
 
-  // PANTALLA 1: ENTREVISTA DINÁMICA (El resto del código se mantiene igual, renderizando el chat)
   return (
     <div className="min-h-screen bg-[#0B1220] text-white flex flex-col">
       <header className="bg-[#111827] border-b border-[#233044] p-4 sticky top-0 z-20">
@@ -188,6 +195,12 @@ export default function EntrevistaEstructuradaPage() {
             </div>
           </div>
         ))}
+        {analizando && (
+          <div className="flex items-center gap-3 text-[#D4A53A] p-4">
+            <Bot className="w-5 h-5 animate-pulse" />
+            <span className="text-sm font-bold animate-pulse">{mensajeEstado}</span>
+          </div>
+        )}
         <div ref={chatEndRef} />
       </main>
 
@@ -210,22 +223,50 @@ export default function EntrevistaEstructuradaPage() {
       {mostrarModalContacto && (
         <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50">
           <div className="bg-[#111827] border border-[#233044] p-8 rounded-2xl max-w-md w-full space-y-6">
-            <div>
-              <h2 className="text-lg font-bold text-[#D4A53A]">Diagnóstico Base Completado</h2>
-              <p className="text-xs text-[#94A3B8]">Validando coherencia de respuestas en progreso...</p>
-            </div>
-            <div className="flex gap-3">
-              <button type="button" onClick={descargarReporte} className="flex-1 border border-[#D4A53A] text-[#D4A53A] py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#D4A53A]/10">
-                <Download className="w-4 h-4" /> Imprimir Dictamen Local
-              </button>
-            </div>
-            <form onSubmit={enviarSolicitudFinal} className="space-y-3 border-t border-[#233044] pt-4">
-              <input type="email" placeholder="Tu correo electrónico" className="w-full bg-black border border-[#233044] p-3 rounded-xl text-sm outline-none focus:border-[#D4A53A]" value={contactoUsuario.email} onChange={(e) => setContactoUsuario({ ...contactoUsuario, email: e.target.value })} required />
-              <input type="tel" placeholder="Tu WhatsApp" className="w-full bg-black border border-[#233044] p-3 rounded-xl text-sm outline-none focus:border-[#D4A53A]" value={contactoUsuario.whatsapp} onChange={(e) => setContactoUsuario({ ...contactoUsuario, whatsapp: e.target.value })} required />
-              <button className="w-full bg-[#D4A53A] text-black py-3 rounded-xl font-bold text-sm hover:brightness-110">
-                Solicitar Verificación Estricta IA
-              </button>
-            </form>
+
+            {/* LÓGICA DEL JUEZ: SI DETECTA HUMO O INCOHERENCIAS */}
+            {resultadoFinal?.coherente === false ? (
+              <div className="space-y-4 text-center">
+                <div className="w-16 h-16 bg-red-500/10 text-red-500 flex items-center justify-center rounded-full mx-auto mb-4">
+                  <ShieldAlert className="w-8 h-8" />
+                </div>
+                <h2 className="text-xl font-black text-red-500 uppercase tracking-widest">Auditoría Rechazada</h2>
+                <p className="text-sm text-gray-300 bg-red-900/20 p-4 rounded-xl border border-red-500/30 font-mono">
+                  {resultadoFinal.veredicto}
+                </p>
+                <p className="text-xs text-gray-500">El motor de inteligencia estratégica exige respuestas argumentadas, no evasivas.</p>
+                <button onClick={() => window.location.reload()} className="w-full bg-transparent border border-red-500 text-red-500 py-3 rounded-xl font-bold hover:bg-red-500 hover:text-white transition">
+                  Reiniciar Evaluación
+                </button>
+              </div>
+            ) : (
+              /* LÓGICA DEL JUEZ: SI ES COHERENTE Y ESTRATÉGICO */
+              <>
+                <div className="text-center space-y-2">
+                  <div className="w-16 h-16 bg-[#D4A53A]/10 text-[#D4A53A] flex items-center justify-center rounded-full mx-auto mb-4">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <h2 className="text-xl font-black text-[#D4A53A] uppercase tracking-widest">Análisis Exitoso</h2>
+                  <p className="text-xs text-[#94A3B8]">Las respuestas han sido validadas por el motor táctico.</p>
+                </div>
+
+                <div className="bg-[#0B1220] p-4 rounded-xl border border-[#233044] text-center">
+                  <span className="text-xs text-gray-400 uppercase tracking-wider block">Puntaje Global</span>
+                  <span className="text-4xl font-black text-[#D4A53A]">
+                    {resultadoFinal?.puntaje_global}/100
+                  </span>
+                </div>
+
+                <form onSubmit={enviarSolicitudFinal} className="space-y-3 border-t border-[#233044] pt-4">
+                  <p className="text-xs text-[#94A3B8]">Ingresa tus datos para desbloquear el dictamen con tus vulnerabilidades y fortalezas:</p>
+                  <input type="email" placeholder="Correo de campaña" className="w-full bg-black border border-[#233044] p-3 rounded-xl text-sm outline-none focus:border-[#D4A53A]" value={contactoUsuario.email} onChange={(e) => setContactoUsuario({ ...contactoUsuario, email: e.target.value })} required />
+                  <input type="tel" placeholder="WhatsApp directo" className="w-full bg-black border border-[#233044] p-3 rounded-xl text-sm outline-none focus:border-[#D4A53A]" value={contactoUsuario.whatsapp} onChange={(e) => setContactoUsuario({ ...contactoUsuario, whatsapp: e.target.value })} required />
+                  <button disabled={analizando} className="w-full bg-[#D4A53A] text-black py-3 rounded-xl font-bold text-sm hover:brightness-110 disabled:opacity-50">
+                    {analizando ? 'Generando Dictamen...' : 'Ver Dictamen Completo'}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
