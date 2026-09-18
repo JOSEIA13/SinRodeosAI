@@ -5,7 +5,6 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { respuestas, cargo } = body;
 
-        // AHORA BUSCAMOS EL NUEVO NOMBRE PARA EVITAR EL BLOQUEO DE VERCEL
         const apiKey = process.env.TOKEN_SECRETO_IA;
 
         if (!apiKey) {
@@ -59,14 +58,14 @@ export async function POST(req: Request) {
         const aiData = await response.json();
 
         if (aiData.error) {
-            throw new Error(aiData.error.message);
+            throw new Error(`OpenAI bloqueó la petición: ${aiData.error.message}`);
         }
 
         const resultadoEvaluacion = JSON.parse(aiData.choices[0].message.content);
-
         return NextResponse.json(resultadoEvaluacion);
-    } catch (error) {
-        console.error('Error en el Juez Evaluador:', error);
-        return NextResponse.json({ error: 'Error procesando la evaluación estratégica.' }, { status: 500 });
+
+    } catch (error: any) {
+        // AQUÍ ESTÁ LA MAGIA: AHORA ENVIAREMOS EL ERROR REAL AL NAVEGADOR
+        return NextResponse.json({ error: error.message || 'Error desconocido' }, { status: 500 });
     }
 }
