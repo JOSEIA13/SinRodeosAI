@@ -12,29 +12,26 @@ export async function POST(req: Request) {
         }
 
         const systemPrompt = `
-      Eres un Consultor Político Senior implacable y analista táctico de élite.
-      Tu tarea es auditar las respuestas de un aspirante a un cargo ${cargo} y generar un dictamen.
+      Eres un Consultor Político Senior, experto en perfilamiento psicológico de candidatos y estrategia electoral despiadada.
+      Estás evaluando a un aspirante a un cargo ${cargo}.
       
-      REGLA 1 - FILTRO ANTI-BASURA (CRÍTICO): 
-      Si las respuestas contienen texto incomprensible (ej. "asdfg"), son evasivas cortas (ej. "no sé", "luego veo"), o carecen totalmente de sentido político, debes abortar el análisis.
+      REGLA 1 - DETECCIÓN DE HUMO: Si las respuestas son evasivas, usan clichés ("trabajar por el pueblo") o no responden la crisis planteada, el puntaje debe caer drásticamente.
       
-      REGLA 2 - EVALUACIÓN ESTRATÉGICA:
-      Si las respuestas son coherentes, evalúa la profundidad táctica, la capacidad de lectura territorial y el manejo de crisis del candidato. No seas complaciente; sé analítico y directo (Cero Humo).
+      TU MISIÓN: Generar un perfil psicológico-estratégico del candidato basado en sus decisiones ante las 3 situaciones planteadas (Crisis, Narrativa, Realpolitik).
       
-      FORMATO DE SALIDA OBLIGATORIO (Solo responde con un objeto JSON válido, sin markdown adicional):
+      FORMATO DE SALIDA OBLIGATORIO (JSON estricto):
       {
-        "coherente": boolean,
+        "arquetipo_politico": "Asigna un perfil (Ej: 'El Gerente Pragmático', 'El Novato Idealista', 'El Político Tradicional', 'El Estratega Calculador')",
         "puntaje_global": number,
-        "veredicto": "string",
-        "fortalezas": ["string", "string"],
-        "vulnerabilidades_graves": ["string", "string"],
-        "recomendacion_tactica": "string"
+        "resumen_fortalezas": "Una frase corta validando su punto más fuerte (alimenta su ego).",
+        "gancho_de_dolor": "Una frase muy dura y analítica sobre su principal falla en las respuestas. Tiene que asustarlo sobre lo que le pasaría en una campaña real por pensar así.",
+        "puntos_ciegos_criticos": ["Falla táctica 1", "Falla táctica 2", "Falla táctica 3"] 
       }
     `;
 
         const userPrompt = `
       Cargo aspirado: ${cargo}
-      Respuestas del candidato (ID de pregunta : Respuesta):
+      Respuestas del candidato ante situaciones de alto estrés:
       ${JSON.stringify(respuestas, null, 2)}
     `;
 
@@ -45,27 +42,25 @@ export async function POST(req: Request) {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'gpt-4o-mini',
+                model: 'gpt-4o-mini', // Si tienes GPT-4o habilitado, puedes usarlo para mayor profundidad
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
                 response_format: { type: "json_object" },
-                temperature: 0.2
+                temperature: 0.4 // Subimos un poco la temperatura para que sea más creativo en el Arquetipo
             })
         });
 
         const aiData = await response.json();
 
-        if (aiData.error) {
-            throw new Error(`OpenAI bloqueó la petición: ${aiData.error.message}`);
-        }
+        if (aiData.error) throw new Error(aiData.error.message);
 
         const resultadoEvaluacion = JSON.parse(aiData.choices[0].message.content);
         return NextResponse.json(resultadoEvaluacion);
 
-    } catch (error: any) {
-        // AQUÍ ESTÁ LA MAGIA: AHORA ENVIAREMOS EL ERROR REAL AL NAVEGADOR
-        return NextResponse.json({ error: error.message || 'Error desconocido' }, { status: 500 });
+    } catch (error) {
+        console.error("Error en evaluación:", error);
+        return NextResponse.json({ error: 'Error procesando la evaluación estratégica.' }, { status: 500 });
     }
 }
