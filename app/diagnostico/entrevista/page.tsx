@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { obtenerPreguntasAleatorias, Pregunta } from '../../../lib/preguntas';
+import { obtenerPreguntasAleatorias, Pregunta } from './preguntas';
 import { Loader2, ShieldAlert, ChevronRight, Briefcase, History, Mail, Phone } from 'lucide-react';
 
 export default function EntrevistaPage() {
