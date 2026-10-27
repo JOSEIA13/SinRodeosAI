@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldAlert, Lock, CheckCircle2, Crosshair } from 'lucide-react';
+import { ShieldAlert, Lock, CheckCircle2, Crosshair, Activity, MessageSquare } from 'lucide-react';
 
 export default function ResultadoPage() {
   const router = useRouter();
@@ -19,23 +19,27 @@ export default function ResultadoPage() {
 
   if (!reporte) return null;
 
-  // EXTRA SEGURIDAD: Prevenimos que la app colapse si la IA omite un dato o hay caché viejo
-  const arquetipo = reporte.arquetipo_politico || "Perfil Estratégico en Análisis";
+  // Variables de seguridad con datos por defecto
+  const arquetipo = reporte.arquetipo_politico || "Perfil en Análisis";
   const puntaje = reporte.puntaje_global || 0;
-  const fortalezas = reporte.resumen_fortalezas || reporte.fortalezas?.[0] || "Se detectaron habilidades de comunicación básicas.";
-  const gancho = reporte.gancho_de_dolor || reporte.veredicto || "Existen fallas tácticas que un oponente podría capitalizar.";
-  const puntosCiegos = reporte.puntos_ciegos_criticos || reporte.vulnerabilidades_graves || ["Falla táctica detectada", "Falla de contingencia"];
+  const gancho = reporte.gancho_de_dolor || "Existen fallas tácticas que un oponente podría capitalizar.";
+  const puntosCiegos = reporte.puntos_ciegos_criticos || ["Falla operativa 1", "Falla narrativa 2"];
 
-  // Número de WhatsApp de la agencia (Recuerda cambiarlo)
+  // Nuevas métricas
+  const capacidadOperativa = reporte.capacidad_operativa || "No se detectó un modelo operativo claro.";
+  const mapeoFortaleza = reporte.mapeo_comunicacional?.fortaleza_principal || "Comunicación estándar.";
+  const mapeoFalla = reporte.mapeo_comunicacional?.falla_estructural || "Falta de contundencia en el cierre.";
+
+  // Número de WhatsApp de la agencia Sin Rodeos
   const WHATSAPP_NUMERO = "TU_NUMERO_AQUI";
-  const mensajeWa = `Hola equipo Sin Rodeos. Acabo de hacer la auditoría táctica. Mi arquetipo es '${arquetipo}' y obtuve ${puntaje}/100. Necesito desbloquear y analizar mis puntos ciegos críticos.`;
+  const mensajeWa = `Hola equipo Sin Rodeos. Acabo de hacer la auditoría táctica. Mi arquetipo es '${arquetipo}' y obtuve ${puntaje}/100. Necesito desbloquear mis puntos ciegos.`;
   const linkWhatsApp = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensajeWa)}`;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans">
       <div className="max-w-3xl mx-auto space-y-8 mt-10">
 
-        {/* Cabecera */}
+        {/* Cabecera y Ego */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-rose-500"></div>
           <h2 className="text-sm font-bold tracking-widest text-slate-500 uppercase mb-2">Perfil Detectado</h2>
@@ -49,12 +53,30 @@ export default function ResultadoPage() {
           </div>
         </div>
 
-        {/* Fortalezas */}
-        <div className="bg-emerald-950/20 border border-emerald-900/50 rounded-xl p-6">
-          <h3 className="text-emerald-500 font-bold flex items-center gap-2 mb-3 uppercase tracking-wider text-sm">
-            <CheckCircle2 size={18} /> Validación Táctica
-          </h3>
-          <p className="text-emerald-100/90 text-lg">{fortalezas}</p>
+        {/* Nuevas Métricas: Comunicación y Operatividad */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h3 className="text-amber-500 font-bold flex items-center gap-2 mb-4 uppercase tracking-wider text-sm">
+              <Activity size={18} /> Capacidad Operativa
+            </h3>
+            <p className="text-slate-300">{capacidadOperativa}</p>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h3 className="text-blue-500 font-bold flex items-center gap-2 mb-4 uppercase tracking-wider text-sm">
+              <MessageSquare size={18} /> Mapeo Comunicacional
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <span className="text-emerald-500 font-bold text-xs uppercase block mb-1">Fortaleza Detectada:</span>
+                <p className="text-slate-300 text-sm">{mapeoFortaleza}</p>
+              </div>
+              <div className="pt-2 border-t border-slate-800">
+                <span className="text-rose-500 font-bold text-xs uppercase block mb-1">Falla Estructural:</span>
+                <p className="text-slate-300 text-sm">{mapeoFalla}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Gancho de Dolor */}
@@ -70,22 +92,22 @@ export default function ResultadoPage() {
         {/* Muro de Pago Psicológico */}
         <div className="relative mt-12 bg-slate-900 border border-slate-800 rounded-2xl p-8 overflow-hidden">
           <h3 className="text-white font-bold text-xl flex items-center gap-2 mb-6">
-            <ShieldAlert className="text-amber-500" /> Vulnerabilidades Críticas Detectadas ({puntosCiegos.length})
+            <ShieldAlert className="text-amber-500" /> Puntos Ciegos Críticos Bloqueados ({puntosCiegos.length})
           </h3>
 
           <div className="space-y-4 filter blur-[6px] opacity-40 select-none pointer-events-none">
             {puntosCiegos.map((punto: string, idx: number) => (
               <div key={idx} className="bg-slate-800 p-4 rounded-lg text-slate-300">
-                [Contenido clasificado bloqueado por el sistema. Error táctico detectado en la maniobra número {idx + 1}]
+                [Contenido clasificado bloqueado por el sistema. Vulnerabilidad estratégica en evaluación {idx + 1}]
               </div>
             ))}
           </div>
 
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm p-6 text-center">
             <Lock size={48} className="text-amber-500 mb-4" />
-            <h4 className="text-2xl font-bold text-white mb-2">Reporte Táctico Bloqueado</h4>
+            <h4 className="text-2xl font-bold text-white mb-2">Desbloquea tu Hoja de Ruta</h4>
             <p className="text-slate-300 max-w-md mb-8">
-              Tu perfil presenta puntos ciegos que tus adversarios podrían explotar. Contáctanos para desbloquear el análisis completo y estructurar tu hoja de ruta.
+              Tu perfil presenta puntos ciegos tácticos que tus adversarios podrían capitalizar. Contáctanos para acceder al análisis profundo de tu campaña.
             </p>
 
             <a
