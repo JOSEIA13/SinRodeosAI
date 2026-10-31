@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldAlert, Lock, CheckCircle2, Crosshair, Activity, MessageSquare, Instagram } from 'lucide-react';
+import { ShieldAlert, Lock, CheckCircle2, Crosshair, Activity, MessageSquare, ExternalLink } from 'lucide-react';
 
 export default function ResultadoPage() {
   const router = useRouter();
@@ -113,7 +113,7 @@ export default function ResultadoPage() {
               Agendar Sesión Táctica
             </a>
 
-            {/* Inyección de la ruta de escape táctica (Instagram) */}
+            {/* Inyección de la ruta de escape táctica (Instagram modificado) */}
             <div className="pt-6 border-t border-slate-800/50 w-full max-w-xs flex flex-col items-center">
               <span className="text-slate-400 text-xs uppercase tracking-widest mb-3">Inteligencia Gratuita</span>
               <a
@@ -122,7 +122,7 @@ export default function ResultadoPage() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-pink-500 hover:text-pink-400 font-bold text-sm transition-colors"
               >
-                <Instagram size={18} /> Ver Tips en Instagram
+                <ExternalLink size={18} /> Ver Tips en Instagram
               </a>
             </div>
           </div>
