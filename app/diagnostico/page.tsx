@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldAlert, Lock, CheckCircle2, Crosshair, Activity, MessageSquare, ExternalLink } from 'lucide-react';
+import { ShieldAlert, Lock, Activity, MessageSquare, ExternalLink, Crosshair } from 'lucide-react';
 
 export default function ResultadoPage() {
   const router = useRouter();
@@ -23,13 +23,11 @@ export default function ResultadoPage() {
   const puntaje = reporte.puntaje_global || 0;
   const gancho = reporte.gancho_de_dolor || "Existen fallas tácticas que un oponente podría capitalizar.";
   const puntosCiegos = reporte.puntos_ciegos_criticos || ["Falla operativa 1", "Falla narrativa 2"];
-
   const capacidadOperativa = reporte.capacidad_operativa || "No se detectó un modelo operativo claro.";
   const mapeoFortaleza = reporte.mapeo_comunicacional?.fortaleza_principal || "Comunicación estándar.";
   const mapeoFalla = reporte.mapeo_comunicacional?.falla_estructural || "Falta de contundencia en el cierre.";
 
-  // Número de WhatsApp de la agencia Sin Rodeos
-  const WHATSAPP_NUMERO = "TU_NUMERO_AQUI";
+  const WHATSAPP_NUMERO = "573000000000"; // Reemplaza por tu número
   const mensajeWa = `Hola equipo Sin Rodeos. Acabo de hacer la auditoría táctica. Mi arquetipo es '${arquetipo}' y obtuve ${puntaje}/100. Necesito desbloquear mis puntos ciegos.`;
   const linkWhatsApp = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensajeWa)}`;
 
@@ -92,7 +90,7 @@ export default function ResultadoPage() {
           <div className="space-y-4 filter blur-[6px] opacity-40 select-none pointer-events-none">
             {puntosCiegos.map((punto: string, idx: number) => (
               <div key={idx} className="bg-slate-800 p-4 rounded-lg text-slate-300">
-                [Contenido clasificado bloqueado por el sistema. Vulnerabilidad estratégica en evaluación {idx + 1}]
+                [Contenido clasificado bloqueado por el sistema. Vulnerabilidad en evaluación {idx + 1}]
               </div>
             ))}
           </div>
@@ -101,19 +99,18 @@ export default function ResultadoPage() {
             <Lock size={48} className="text-amber-500 mb-4" />
             <h4 className="text-2xl font-bold text-white mb-2">Desbloquea tu Hoja de Ruta</h4>
             <p className="text-slate-300 max-w-md mb-8">
-              Tu perfil presenta puntos ciegos tácticos que tus adversarios podrían capitalizar. Contáctanos para acceder al análisis profundo de tu campaña.
+              Tu perfil presenta puntos ciegos tácticos que tus adversarios podrían capitalizar. Contáctanos para acceder al análisis profundo.
             </p>
 
             <a
               href={linkWhatsApp}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-8 py-4 rounded-xl uppercase tracking-widest transition-all shadow-[0_0_30px_rgba(245,158,11,0.2)] hover:shadow-[0_0_40px_rgba(245,158,11,0.4)] mb-8"
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-8 py-4 rounded-xl uppercase tracking-widest transition-all shadow-[0_0_30px_rgba(245,158,11,0.2)] mb-8"
             >
               Agendar Sesión Táctica
             </a>
 
-            {/* Inyección de la ruta de escape táctica (Instagram modificado) */}
             <div className="pt-6 border-t border-slate-800/50 w-full max-w-xs flex flex-col items-center">
               <span className="text-slate-400 text-xs uppercase tracking-widest mb-3">Inteligencia Gratuita</span>
               <a
@@ -127,7 +124,6 @@ export default function ResultadoPage() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
