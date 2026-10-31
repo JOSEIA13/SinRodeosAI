@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldAlert, Lock, Activity, MessageSquare, ExternalLink, Crosshair } from 'lucide-react';
+import { ShieldAlert, Lock, Activity, MessageSquare, ExternalLink, Crosshair, Download, Loader2 } from 'lucide-react';
 
 export default function ResultadoPage() {
   const router = useRouter();
   const [reporte, setReporte] = useState<any>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const data = sessionStorage.getItem('dictamen_ia');
@@ -16,6 +17,31 @@ export default function ResultadoPage() {
       router.push('/diagnostico/entrevista');
     }
   }, [router]);
+
+  const generarPDF = async () => {
+    setIsDownloading(true);
+    try {
+      // Importación dinámica para evitar errores de compilación en Vercel (SSR)
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+
+      const input = document.getElementById('reporte-pdf');
+      if (input) {
+        const canvas = await html2canvas(input, { scale: 2, backgroundColor: '#020617' });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`Diagnostico_SinRodeos_${reporte.arquetipo_politico.replace(/\s+/g, '_')}.pdf`);
+      }
+    } catch (error) {
+      console.error("Error al generar PDF:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   if (!reporte) return null;
 
@@ -33,7 +59,21 @@ export default function ResultadoPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans">
-      <div className="max-w-3xl mx-auto space-y-8 mt-10">
+
+      {/* Botón de Descarga fuera de la zona de captura para que no estorbe visualmente */}
+      <div className="max-w-3xl mx-auto flex justify-end mb-4">
+        <button
+          onClick={generarPDF}
+          disabled={isDownloading}
+          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-50"
+        >
+          {isDownloading ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
+          {isDownloading ? 'Generando Documento...' : 'Descargar Análisis en PDF'}
+        </button>
+      </div>
+
+      {/* ZONA DE CAPTURA PDF */}
+      <div id="reporte-pdf" className="max-w-3xl mx-auto space-y-8 pb-10 bg-slate-950">
 
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-rose-500"></div>
@@ -125,6 +165,8 @@ export default function ResultadoPage() {
           </div>
         </div>
       </div>
+      {/* FIN ZONA DE CAPTURA */}
+
     </div>
   );
 }
