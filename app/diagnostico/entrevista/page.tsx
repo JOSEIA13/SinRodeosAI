@@ -45,7 +45,8 @@ export default function EntrevistaPage() {
       return;
     }
 
-    if (paso < 3) {
+    // AHORA ES DINÁMICO: Avanza hasta que se acaben las preguntas
+    if (paso < preguntas.length) {
       setPaso(paso + 1);
     } else {
       enviarAuditoria();
@@ -92,14 +93,14 @@ export default function EntrevistaPage() {
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-2">Simulador Táctico</h1>
           <p className="text-slate-400">
-            {paso === 0 ? 'Configura tu perfil para iniciar la auditoría.' : `Fase de Estrés: ${paso} de 3`}
+            {paso === 0 ? 'Configura tu perfil para iniciar la auditoría.' : `Fase de Estrés: ${paso} de ${preguntas.length}`}
           </p>
 
           {paso > 0 && (
             <div className="w-full bg-slate-900 h-2 mt-6 rounded-full overflow-hidden border border-slate-800">
               <div
                 className="bg-amber-500 h-full transition-all duration-500"
-                style={{ width: `${(paso / 3) * 100}%` }}
+                style={{ width: `${(paso / preguntas.length) * 100}%` }}
               ></div>
             </div>
           )}
@@ -179,7 +180,7 @@ export default function EntrevistaPage() {
           <form onSubmit={avanzarPaso} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
             <div className="flex items-center gap-3 mb-6">
               <span className="bg-rose-500/10 text-rose-500 font-mono px-3 py-1 rounded text-sm border border-rose-500/20">
-                CRISIS {paso}/3
+                CRISIS {paso}/{preguntas.length}
               </span>
               <span className="text-xs uppercase tracking-widest text-slate-500 font-bold">
                 {preguntas[paso - 1].categoria}
@@ -213,7 +214,7 @@ export default function EntrevistaPage() {
               {isSubmitting ? (
                 <><Loader2 className="animate-spin" size={20} /> Auditando Respuestas...</>
               ) : (
-                paso < 3 ? <><ChevronRight size={20} /> Siguiente Maniobra</> : 'Enviar al Consultor IA'
+                paso < preguntas.length ? <><ChevronRight size={20} /> Siguiente Maniobra</> : 'Enviar al Consultor IA'
               )}
             </button>
           </form>
