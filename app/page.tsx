@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Crosshair, ShieldAlert, Instagram } from 'lucide-react';
+import { Crosshair, ShieldAlert, ExternalLink } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -43,7 +43,7 @@ export default function Home() {
             rel="noopener noreferrer"
             className="w-full md:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-pink-500/50 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all group shadow-lg"
           >
-            <Instagram size={20} className="text-pink-500 group-hover:scale-110 transition-transform" />
+            <ExternalLink size={20} className="text-pink-500 group-hover:scale-110 transition-transform" />
             Ver Metodología (Tips)
           </a>
 
