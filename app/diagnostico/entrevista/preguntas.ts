@@ -55,4 +55,20 @@ export function obtenerPreguntasAleatorias(cargo: string): Pregunta[] {
     p3.texto = p3.texto.replace(/\[CARGO\]/g, nombreCargo);
 
     return [p1, p2, p3];
-}
+} export const preguntasFiltro = [
+    {
+        id: "motivacion_real",
+        texto: "Más allá del cliché de 'querer ayudar a la gente', ¿cuál es su verdadera motivación para buscar el poder?",
+        placeholder: "Sea honesto. ¿Ego, revancha, vocación de servicio real, visión de negocios?"
+    },
+    {
+        id: "estructura_operativa",
+        texto: "La política no se hace solo con likes. Describa su estructura operativa real el día de hoy (líderes de barrio, bases de datos, maquinaria).",
+        placeholder: "Ej: Tengo 3 ediles aliados y una base de 500 simpatizantes..."
+    },
+    {
+        id: "musculo_financiero",
+        texto: "Las campañas cuestan dinero. ¿Cuenta con músculo financiero propio, grandes aportantes, o espera que la campaña 'se pague sola'?",
+        placeholder: "Detalle su realidad financiera para este proyecto..."
+    }
+];
